@@ -1,19 +1,117 @@
-snippet awas_app
+snippet az_awas_docker
 {
-	"name": "$1",
+	"name": "${1:appName}",
 	"type": "Microsoft.Web/sites",
-	"apiVersion": "2020-09-01",
-	"properties": {
-		"enabled":true
-	}
+	
+
+	"properties": {
+		"siteConfig":{
+			"linuxFxVersion":"[concat('DOCKER|',${2:toLower(variables('acrName')),'.azurecr.io/'},toLower('/$1:${4:latest}'))]",
+			"appSettings":[
+				{"name":"DOCKER_REGISTRY_SERVER_URL","value":"[concat($2)]"},
+				{"name":"DOCKER_REGISTRY_SERVER_USERNAME","value":"[parameters('acrUsername')]"},
+				{"name":"DOCKER_REGISTRY_SERVER_PASSWORD","value":"[parameters('acrPassword')]"}
+			]
+		},
+
+		"serverFarmId":"${5:[resourceId('Microsoft.Web/serverfarms',${6:variables('planName')})]}"
+	},
+
+	"resources":[],
+
+	"dependsOn":[
+		"$5",
+		"[resourceId('Microsoft.ContainerRegistry/registries',variables('acrName'))]"
+	],
+	"location": "${7:[resourceGroup().location]}",
+	"apiVersion": "2020-09-01"
 }
 endsnippet
 
-snippet awas_plan
+snippet az_awas_linux_plan 
 {
-	"name": "$1",
+	"name": "${1:[variables('planName')]}",
 	"type": "Microsoft.Web/serverfarms",
-	"apiVersion": "2020-09-01"
-	"location": "$2"
+	"kind": "Linux",
+	"location": "${2:[resourceGroup().location]}",
+	"properties":{
+		"reserved": true
+	},
+	"sku":{
+		"name":"${3:B1}"
+	},
+	"apiVersion": "2020-06-01"
+}
+endsnippet
+
+snippet az_acr
+{
+	"name":"${1:variables('acrName')}",
+	"type":"Microsoft.ContainerRegistry/registries",
+	"sku":{
+		"name":"${2:Basic}"
+	},
+
+	"properties":{},
+
+	"location":"${4:[resourceGroup().location]}",
+	"apiVersion": "2017-10-01"
+}
+endsnippet
+
+snippet az_arm_param
+"${1:myParam}": {
+	"type":"${2:string}",
+	"defaultValue":"$3",
+	"metadata":{
+		"description":"${4:my description}"
+	},
+	${5:"allowedValues":[
+	],}
+	${6:"minValue":1,}
+	${7:"maxValue":2,}
+}
+endsnippet
+
+snippet az_arm
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters":{
+	},
+	"variables":{
+	},
+	"resources":[
+	]
+}
+endsnippet
+
+snippet az_arm_awas_docker
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters":{
+		"acrUsername":{
+			"type":"string",
+			"metadata":{
+				"description":"Username for docker repo"
+			}
+		},
+		"acrPassword":{
+			"type":"string",
+			"metadata":{
+				"description":"Password for docker repo"
+			}
+		}
+	},
+
+	"variables":{
+		"acrName":"$1Acr"
+		"planName":"$1Plan",
+	},
+
+	"resources":[
+		$2
+	]
 }
 endsnippet
