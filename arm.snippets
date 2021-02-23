@@ -1,0 +1,19 @@
+snippet awas_app
+{
+	"name": "$1",
+	"type": "Microsoft.Web/sites",
+	"apiVersion": "2020-09-01",
+	"properties": {
+		"enabled":true
+	}
+}
+endsnippet
+
+snippet awas_plan
+{
+	"name": "$1",
+	"type": "Microsoft.Web/serverfarms",
+	"apiVersion": "2020-09-01"
+	"location": "$2"
+}
+endsnippet
